@@ -1,0 +1,382 @@
+[
+    {
+        "label": "pymongo",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pymongo",
+        "description": "pymongo",
+        "detail": "pymongo",
+        "documentation": {}
+    },
+    {
+        "label": "MongoClient",
+        "importPath": "pymongo",
+        "description": "pymongo",
+        "isExtraImport": true,
+        "detail": "pymongo",
+        "documentation": {}
+    },
+    {
+        "label": "MongoClient",
+        "importPath": "pymongo",
+        "description": "pymongo",
+        "isExtraImport": true,
+        "detail": "pymongo",
+        "documentation": {}
+    },
+    {
+        "label": "Faker",
+        "importPath": "faker",
+        "description": "faker",
+        "isExtraImport": true,
+        "detail": "faker",
+        "documentation": {}
+    },
+    {
+        "label": "random",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "random",
+        "description": "random",
+        "detail": "random",
+        "documentation": {}
+    },
+    {
+        "label": "uuid",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "uuid",
+        "description": "uuid",
+        "detail": "uuid",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "timedelta",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "SON",
+        "importPath": "bson.son",
+        "description": "bson.son",
+        "isExtraImport": true,
+        "detail": "bson.son",
+        "documentation": {}
+    },
+    {
+        "label": "date_to_datetime",
+        "kind": 2,
+        "importPath": "code.data_generation",
+        "description": "code.data_generation",
+        "peekOfCode": "def date_to_datetime(d):\n    return datetime.combine(d, datetime.min.time())\n# 1. Generate Users Data\ndef generate_users(num_users):\n    users = []\n    for user_id in range(1, num_users + 1):\n        registration_date = fake.date_between(\n            start_date='-5y', end_date='today')\n        user = {\n            'user_id': str(uuid.uuid4()),",
+        "detail": "code.data_generation",
+        "documentation": {}
+    },
+    {
+        "label": "generate_users",
+        "kind": 2,
+        "importPath": "code.data_generation",
+        "description": "code.data_generation",
+        "peekOfCode": "def generate_users(num_users):\n    users = []\n    for user_id in range(1, num_users + 1):\n        registration_date = fake.date_between(\n            start_date='-5y', end_date='today')\n        user = {\n            'user_id': str(uuid.uuid4()),\n            'name': fake.name(),\n            'address': fake.address().split('\\n')[0].rstrip(),\n            'registration_date': date_to_datetime(registration_date)",
+        "detail": "code.data_generation",
+        "documentation": {}
+    },
+    {
+        "label": "generate_registered_wells",
+        "kind": 2,
+        "importPath": "code.data_generation",
+        "description": "code.data_generation",
+        "peekOfCode": "def generate_registered_wells(users):\n    wells = []\n    illegal_user = random.choice(users)  # Select one user to be the illegal user\n    illegal_well_id = str(uuid.uuid4())  # Generate a unique well_id for the illegal well\n    max_lat, max_long = 42.822458, -5.593844\n    min_lat, min_long = 42.788357, -5.669483\n    for user in users:\n        if user == illegal_user:  # Create the illegal well\n            illegal_well = {\n                'well_id': illegal_well_id,",
+        "detail": "code.data_generation",
+        "documentation": {}
+    },
+    {
+        "label": "generate_water_consumption",
+        "kind": 2,
+        "importPath": "code.data_generation",
+        "description": "code.data_generation",
+        "peekOfCode": "def generate_water_consumption(users, illegal_user, num_records_per_user=50):\n    consumption_records = []\n    for user in users:\n        previous_reading = random.uniform(0, 100)\n        date = datetime.now() - timedelta(days=365)\n        # If the user is the illegal user, give them abnormally high consumption\n        is_illegal_user = user['user_id'] == illegal_user['user_id']\n        for _ in range(num_records_per_user):\n            # For the illegal user, increase variation to simulate higher usage\n            consumption_increase = random.uniform(",
+        "detail": "code.data_generation",
+        "documentation": {}
+    },
+    {
+        "label": "generate_control_activities",
+        "kind": 2,
+        "importPath": "code.data_generation",
+        "description": "code.data_generation",
+        "peekOfCode": "def generate_control_activities(registered_wells, illegal_well):\n    activities = []\n    # Filter out the illegal well and get 90% of the remaining wells\n    legal_wells = [well for well in registered_wells if well['well_id'] != illegal_well['well_id']]\n    num_activities = int(0.9 * len(legal_wells))  # 90% of legal wells\n    # Randomly choose 90% of the legal wells\n    selected_wells = random.sample(legal_wells, num_activities)\n    for well in selected_wells:\n        # Ensure control activity date is after last_status_change and before today\n        start_date = well['last_status_change']",
+        "detail": "code.data_generation",
+        "documentation": {}
+    },
+    {
+        "label": "fake",
+        "kind": 5,
+        "importPath": "code.data_generation",
+        "description": "code.data_generation",
+        "peekOfCode": "fake = Faker('es_ES')  # Use 'es_ES' for Spain or 'es_MX' for Mexico\n# Connect to MongoDB\nclient = MongoClient('mongodb://localhost:27017')\ndb = client['village']\n# Clear existing collections if any\ndb.users.drop()\ndb.water_consumption.drop()\ndb.registered_wells.drop()\ndb.control_activities.drop()\ndb.demography.drop()",
+        "detail": "code.data_generation",
+        "documentation": {}
+    },
+    {
+        "label": "client",
+        "kind": 5,
+        "importPath": "code.data_generation",
+        "description": "code.data_generation",
+        "peekOfCode": "client = MongoClient('mongodb://localhost:27017')\ndb = client['village']\n# Clear existing collections if any\ndb.users.drop()\ndb.water_consumption.drop()\ndb.registered_wells.drop()\ndb.control_activities.drop()\ndb.demography.drop()\n# Collections\nusers_col = db['users']",
+        "detail": "code.data_generation",
+        "documentation": {}
+    },
+    {
+        "label": "db",
+        "kind": 5,
+        "importPath": "code.data_generation",
+        "description": "code.data_generation",
+        "peekOfCode": "db = client['village']\n# Clear existing collections if any\ndb.users.drop()\ndb.water_consumption.drop()\ndb.registered_wells.drop()\ndb.control_activities.drop()\ndb.demography.drop()\n# Collections\nusers_col = db['users']\nwater_consumption_col = db['water_consumption']",
+        "detail": "code.data_generation",
+        "documentation": {}
+    },
+    {
+        "label": "users_col",
+        "kind": 5,
+        "importPath": "code.data_generation",
+        "description": "code.data_generation",
+        "peekOfCode": "users_col = db['users']\nwater_consumption_col = db['water_consumption']\nregistered_wells_col = db['registered_wells']\ncontrol_activities_col = db['control_activities']\ndemography_col = db['demography']\n# Helper function to convert date to datetime\ndef date_to_datetime(d):\n    return datetime.combine(d, datetime.min.time())\n# 1. Generate Users Data\ndef generate_users(num_users):",
+        "detail": "code.data_generation",
+        "documentation": {}
+    },
+    {
+        "label": "water_consumption_col",
+        "kind": 5,
+        "importPath": "code.data_generation",
+        "description": "code.data_generation",
+        "peekOfCode": "water_consumption_col = db['water_consumption']\nregistered_wells_col = db['registered_wells']\ncontrol_activities_col = db['control_activities']\ndemography_col = db['demography']\n# Helper function to convert date to datetime\ndef date_to_datetime(d):\n    return datetime.combine(d, datetime.min.time())\n# 1. Generate Users Data\ndef generate_users(num_users):\n    users = []",
+        "detail": "code.data_generation",
+        "documentation": {}
+    },
+    {
+        "label": "registered_wells_col",
+        "kind": 5,
+        "importPath": "code.data_generation",
+        "description": "code.data_generation",
+        "peekOfCode": "registered_wells_col = db['registered_wells']\ncontrol_activities_col = db['control_activities']\ndemography_col = db['demography']\n# Helper function to convert date to datetime\ndef date_to_datetime(d):\n    return datetime.combine(d, datetime.min.time())\n# 1. Generate Users Data\ndef generate_users(num_users):\n    users = []\n    for user_id in range(1, num_users + 1):",
+        "detail": "code.data_generation",
+        "documentation": {}
+    },
+    {
+        "label": "control_activities_col",
+        "kind": 5,
+        "importPath": "code.data_generation",
+        "description": "code.data_generation",
+        "peekOfCode": "control_activities_col = db['control_activities']\ndemography_col = db['demography']\n# Helper function to convert date to datetime\ndef date_to_datetime(d):\n    return datetime.combine(d, datetime.min.time())\n# 1. Generate Users Data\ndef generate_users(num_users):\n    users = []\n    for user_id in range(1, num_users + 1):\n        registration_date = fake.date_between(",
+        "detail": "code.data_generation",
+        "documentation": {}
+    },
+    {
+        "label": "demography_col",
+        "kind": 5,
+        "importPath": "code.data_generation",
+        "description": "code.data_generation",
+        "peekOfCode": "demography_col = db['demography']\n# Helper function to convert date to datetime\ndef date_to_datetime(d):\n    return datetime.combine(d, datetime.min.time())\n# 1. Generate Users Data\ndef generate_users(num_users):\n    users = []\n    for user_id in range(1, num_users + 1):\n        registration_date = fake.date_between(\n            start_date='-5y', end_date='today')",
+        "detail": "code.data_generation",
+        "documentation": {}
+    },
+    {
+        "label": "check_last_status_change_dates",
+        "kind": 2,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "def check_last_status_change_dates():\n    print(\"\\nChecking that 'last_status_change' dates are after 'authorization_date'...\")\n    query = {\n        '$expr': {\n            '$and': [\n                { '$ne': [\"$authorization_date\", None] },\n                { '$lt': [\"$last_status_change\", \"$authorization_date\"] }\n            ]\n        }\n    }",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "check_control_activities_coverage",
+        "kind": 2,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "def check_control_activities_coverage():\n    print(\"\\nChecking control activities coverage (should be ~90%)...\")\n    total_legal_wells = registered_wells_col.count_documents({ 'authorization_date': { '$ne': None } })\n    wells_with_activities = len(control_activities_col.distinct('well_id'))\n    coverage_percentage = (wells_with_activities / total_legal_wells) * 100 if total_legal_wells else 0\n    print(f\"Total legal wells: {total_legal_wells}\")\n    print(f\"Wells with control activities: {wells_with_activities}\")\n    print(f\"Control Activities Coverage: {coverage_percentage:.2f}%\")\n    if 85 <= coverage_percentage <= 95:\n        print(\"PASS: Control activities coverage is within expected range.\")",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "check_no_control_activities_for_illegal_well",
+        "kind": 2,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "def check_no_control_activities_for_illegal_well():\n    print(\"\\nChecking that there are no control activities for the illegal well...\")\n    illegal_well = registered_wells_col.find_one({ 'authorization_date': None })\n    if not illegal_well:\n        print(\"WARN: No illegal well found (no well without 'authorization_date').\")\n        return\n    activities = list(control_activities_col.find({ 'well_id': illegal_well['well_id'] }))\n    if not activities:\n        print(\"PASS: No control activities found for the illegal well.\")\n    else:",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "check_control_activity_dates",
+        "kind": 2,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "def check_control_activity_dates():\n    print(\"\\nChecking that control activity dates are after 'last_status_change' and before today...\")\n    pipeline = [\n        {\n            '$lookup': {\n                'from': \"registered_wells\",\n                'localField': \"well_id\",\n                'foreignField': \"well_id\",\n                'as': \"well_info\"\n            }",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "check_future_user_registration_dates",
+        "kind": 2,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "def check_future_user_registration_dates():\n    print(\"\\nChecking for users with 'registration_date' in the future...\")\n    future_users = list(users_col.find({ 'registration_date': { '$gt': datetime.now() } }))\n    if not future_users:\n        print(\"PASS: No users have 'registration_date' in the future.\")\n    else:\n        print(\"FAIL: Found users with 'registration_date' in the future:\")\n        for user in future_users:\n            print(f\" - User ID: {user['user_id']}, Registration Date: {user['registration_date']}\")\ndef identify_illegal_well_and_owner():",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "identify_illegal_well_and_owner",
+        "kind": 2,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "def identify_illegal_well_and_owner():\n    print(\"\\nIdentifying the illegal well and its owner...\")\n    # Step a: Identify high consumption users\n    high_consumption_users = water_consumption_col.aggregate([\n        {\n            '$group': {\n                '_id': \"$user_id\",\n                'totalConsumption': { '$sum': \"$consumption_m3\" }\n            }\n        },",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "check_dates_in_future_in_registered_wells",
+        "kind": 2,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "def check_dates_in_future_in_registered_wells():\n    print(\"\\nChecking for wells with 'last_status_change' or 'authorization_date' in the future...\")\n    wells_in_future = list(registered_wells_col.find({\n        '$or': [\n            { 'last_status_change': { '$gt': datetime.now() } },\n            { 'authorization_date': { '$gt': datetime.now() } }\n        ]\n    }))\n    if not wells_in_future:\n        print(\"PASS: No wells have dates in the future.\")",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "extract_first_syllable",
+        "kind": 2,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "def extract_first_syllable(name):\n    # Split the full name into parts (first name and surnames)\n    name_parts = name.split()\n    # Helper function to extract the first syllable of a name part\n    def get_syllable(part):\n        if len(part) < 3:\n            return part.upper()\n        return part[:3].upper()\n    # Extract first syllable from each part of the name (first name and surnames)\n    first_syllables = [get_syllable(part) for part in name_parts]",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "check_names_length",
+        "kind": 2,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "def check_names_length():\n    print(\"\\nChecking for users with names shorter than 3 characters...\")\n    short_names = list(users_col.find({ '$expr': { '$lt': [{'$strLenCP': \"$name\"}, 3] } }))\n    if not short_names:\n        print(\"PASS: No users have names shorter than 3 characters.\")\n    else:\n        print(\"FAIL: Found users with names shorter than 3 characters:\")\n        for user in short_names:\n            print(f\" - User ID: {user['user_id']}, Name: {user['name']}\")\ndef identify_illegal_well_and_owner():",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "identify_illegal_well_and_owner",
+        "kind": 2,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "def identify_illegal_well_and_owner():\n    print(\"\\nIdentifying the illegal well and its owner...\")\n    # Step a: Identify high consumption users\n    high_consumption_users = water_consumption_col.aggregate([\n        {\n            '$group': {\n                '_id': \"$user_id\",\n                'totalConsumption': { '$sum': \"$consumption_m3\" }\n            }\n        },",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "def main():\n    print(\"Starting data validation and analysis...\\n\")\n    check_last_status_change_dates()\n    check_control_activities_coverage()\n    check_no_control_activities_for_illegal_well()\n    check_control_activity_dates()\n    check_future_user_registration_dates()\n    check_dates_in_future_in_registered_wells()\n    check_names_length()  # New validation step for name length\n    identify_illegal_well_and_owner()",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "client",
+        "kind": 5,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "client = MongoClient('mongodb://localhost:27017')\ndb = client['village']\n# Collections\nusers_col = db['users']\nwater_consumption_col = db['water_consumption']\nregistered_wells_col = db['registered_wells']\ncontrol_activities_col = db['control_activities']\ndef check_last_status_change_dates():\n    print(\"\\nChecking that 'last_status_change' dates are after 'authorization_date'...\")\n    query = {",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "db",
+        "kind": 5,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "db = client['village']\n# Collections\nusers_col = db['users']\nwater_consumption_col = db['water_consumption']\nregistered_wells_col = db['registered_wells']\ncontrol_activities_col = db['control_activities']\ndef check_last_status_change_dates():\n    print(\"\\nChecking that 'last_status_change' dates are after 'authorization_date'...\")\n    query = {\n        '$expr': {",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "users_col",
+        "kind": 5,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "users_col = db['users']\nwater_consumption_col = db['water_consumption']\nregistered_wells_col = db['registered_wells']\ncontrol_activities_col = db['control_activities']\ndef check_last_status_change_dates():\n    print(\"\\nChecking that 'last_status_change' dates are after 'authorization_date'...\")\n    query = {\n        '$expr': {\n            '$and': [\n                { '$ne': [\"$authorization_date\", None] },",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "water_consumption_col",
+        "kind": 5,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "water_consumption_col = db['water_consumption']\nregistered_wells_col = db['registered_wells']\ncontrol_activities_col = db['control_activities']\ndef check_last_status_change_dates():\n    print(\"\\nChecking that 'last_status_change' dates are after 'authorization_date'...\")\n    query = {\n        '$expr': {\n            '$and': [\n                { '$ne': [\"$authorization_date\", None] },\n                { '$lt': [\"$last_status_change\", \"$authorization_date\"] }",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "registered_wells_col",
+        "kind": 5,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "registered_wells_col = db['registered_wells']\ncontrol_activities_col = db['control_activities']\ndef check_last_status_change_dates():\n    print(\"\\nChecking that 'last_status_change' dates are after 'authorization_date'...\")\n    query = {\n        '$expr': {\n            '$and': [\n                { '$ne': [\"$authorization_date\", None] },\n                { '$lt': [\"$last_status_change\", \"$authorization_date\"] }\n            ]",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "control_activities_col",
+        "kind": 5,
+        "importPath": "code.data_validation",
+        "description": "code.data_validation",
+        "peekOfCode": "control_activities_col = db['control_activities']\ndef check_last_status_change_dates():\n    print(\"\\nChecking that 'last_status_change' dates are after 'authorization_date'...\")\n    query = {\n        '$expr': {\n            '$and': [\n                { '$ne': [\"$authorization_date\", None] },\n                { '$lt': [\"$last_status_change\", \"$authorization_date\"] }\n            ]\n        }",
+        "detail": "code.data_validation",
+        "documentation": {}
+    },
+    {
+        "label": "check_repl_initialized",
+        "kind": 2,
+        "importPath": "code.db_healthcheck",
+        "description": "code.db_healthcheck",
+        "peekOfCode": "def check_repl_initialized(name, host, port):\n    try:\n        client = pymongo.MongoClient(host=host, port=port, serverSelectionTimeoutMS=2000)\n        result = client.admin.command('replSetGetStatus')\n        if result.get('ok') == 1:\n            return True\n        else:\n            return False\n    except Exception:\n        return False",
+        "detail": "code.db_healthcheck",
+        "documentation": {}
+    },
+    {
+        "label": "check_shards_added",
+        "kind": 2,
+        "importPath": "code.db_healthcheck",
+        "description": "code.db_healthcheck",
+        "peekOfCode": "def check_shards_added(host, port):\n    try:\n        client = pymongo.MongoClient(host=host, port=port, serverSelectionTimeoutMS=2000)\n        result = client.admin.command('listShards')\n        shards = result.get('shards', [])\n        if len(shards) >= 3:\n            return True\n        else:\n            return False\n    except Exception:",
+        "detail": "code.db_healthcheck",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "code.db_healthcheck",
+        "description": "code.db_healthcheck",
+        "peekOfCode": "def main():\n    services = [\n        {'name': 'Config Server Replica Set', 'host': 'mongo-config', 'port': 27017},\n        {'name': 'Shard Alpha Replica Set', 'host': 'shard-alpha', 'port': 27018},\n        {'name': 'Shard Beta Replica Set', 'host': 'shard-beta', 'port': 27019},\n        {'name': 'Shard Charlie Replica Set', 'host': 'shard-charlie', 'port': 27020},\n    ]\n    results = []\n    for service in services:\n        initialized = check_repl_initialized(service['name'], service['host'], service['port'])",
+        "detail": "code.db_healthcheck",
+        "documentation": {}
+    }
+]

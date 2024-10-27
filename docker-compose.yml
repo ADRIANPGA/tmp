@@ -1,0 +1,77 @@
+services:
+  # Config Server Replica Set Member
+  mongo-config:
+    image: mongo:4.4
+    container_name: mongo-config
+    command: mongod --configsvr --replSet configReplSet --port 27017 --bind_ip_all
+    volumes:
+      - mongo-config:/data/db
+    networks:
+      - mongo-cluster
+
+  # Shard Alpha Replica Set
+  shard-alpha:
+    image: mongo:4.4
+    container_name: shard-alpha
+    command: mongod --shardsvr --replSet alphaReplSet --port 27018 --bind_ip_all
+    volumes:
+      - shard-alpha:/data/db
+    networks:
+      - mongo-cluster
+
+  # Shard Beta Replica Set
+  shard-beta:
+    image: mongo:4.4
+    container_name: shard-beta
+    command: mongod --shardsvr --replSet betaReplSet --port 27019 --bind_ip_all
+    volumes:
+      - shard-beta:/data/db
+    networks:
+      - mongo-cluster
+
+  # Shard Charlie Replica Set
+  shard-charlie:
+    image: mongo:4.4
+    container_name: shard-charlie
+    command: mongod --shardsvr --replSet charlieReplSet --port 27020 --bind_ip_all
+    volumes:
+      - shard-charlie:/data/db
+    networks:
+      - mongo-cluster
+
+  # MongoDB Query Router (mongos)
+  mongos:
+    image: mongo:4.4
+    container_name: mongos
+    depends_on:
+      - mongo-config
+      - shard-alpha
+      - shard-beta
+      - shard-charlie
+    command: >
+      mongos --configdb configReplSet/mongo-config:27017 --bind_ip_all --port 27017
+    ports:
+      - "27017:27017"
+    networks:
+      - mongo-cluster
+
+  # Setup Service to Initialize the Cluster
+  setup:
+    image: mongo:4.4
+    container_name: setup
+    depends_on:
+      - mongos
+    volumes:
+      - ./scripts:/scripts
+    command: bash -c "sleep 20 && bash /scripts/initiate.sh"
+    networks:
+      - mongo-cluster
+
+volumes:
+  mongo-config:
+  shard-alpha:
+  shard-beta:
+  shard-charlie:
+
+networks:
+  mongo-cluster:
